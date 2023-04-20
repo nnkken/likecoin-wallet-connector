@@ -346,7 +346,9 @@ export default {
         this.isSigningArbitrary = true;
 
         const result = await offlineSigner.signArbitrary(
-           'likecoin-mainnet-2', account.address, this.signArbitraryMessage,
+          this.connector.options.chainId,
+          account.address,
+          this.signArbitraryMessage,
         );
         this.signArbitraryResult = JSON.stringify(result);
       } catch (error) {
