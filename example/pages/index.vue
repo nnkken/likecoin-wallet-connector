@@ -104,6 +104,38 @@
               </v-row>
             </v-alert>
           </v-col>
+          <v-col>
+            <v-card
+              :loading="isSigningArbitrary"
+              class="mx-auto my-12"
+              max-width="480"
+              outlined
+            >
+              <div>
+                <v-form
+                  class="pa-4"
+                  @submit.prevent="signArbitrary"
+                >
+                  <v-text-field
+                    :value="signArbitraryMessage"
+                    label="Message to sign"
+                    required
+                  />
+                  <div class="d-flex justify-end">
+                    <v-btn
+                      type="submit"
+                      :elevation="isSigningArbitrary ? 0 : 2"
+                      :disabled="isSigningArbitrary"
+                      :loading="isSigningArbitrary"
+                    >Sign</v-btn>
+                  </div>
+                </v-form>
+                <div>
+                  Signature: {{ signArbitraryResult }}
+                </div>
+              </div>
+            </v-card>
+          </v-col>
         </v-row>
       </v-container>
     </v-main>
@@ -134,9 +166,13 @@ export default {
       amount: 1,
       fee: 5000,
 
+      signArbitraryMessage: 'Hello, @likecoin/wallet-connector!',
+      signArbitraryResult: '',
+
       txHash: '',
       error: '',
       isSending: false,
+      isSigningArbitrary: false,
       isShowAlert: false,
     };
   },
@@ -207,6 +243,7 @@ export default {
     reset() {
       this.offlineSigner = undefined;
       this.walletAddress = '';
+      this.signArbitraryResult = '';
 
       this.txHash = '';
       this.error = '';
@@ -288,6 +325,35 @@ export default {
         console.error(error);
       } finally {
         this.isSending = false;
+      }
+    },
+    async signArbitrary() {
+      try {
+        this.error = '';
+        this.isShowAlert = false;
+        this.signArbitraryResult = '';
+
+        const connection = await this.connector.initIfNecessary();
+        if (!connection) return;
+        const { method, accounts: [account], offlineSigner, signArbitrary } = connection;
+        this.method = method;
+        this.walletAddress = account.address;
+        this.offlineSigner = offlineSigner;
+        if (!offlineSigner.signArbitrary) {
+          throw new Error('signArbitrary not supported');
+        }
+
+        this.isSigningArbitrary = true;
+
+        const result = await offlineSigner.signArbitrary(
+           'likecoin-mainnet-2', account.address, this.signArbitraryMessage,
+        );
+        this.signArbitraryResult = JSON.stringify(result);
+      } catch (error) {
+        this.error = `${error.message || error.name || error}`;
+        console.error(error);
+      } finally {
+        this.isSigningArbitrary = false;
       }
     },
   },
