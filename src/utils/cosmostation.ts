@@ -72,7 +72,7 @@ export const getCosmostationExtensionOfflineSigner = (
   signArbitrary: async (_, signer, message) => {
     const { pub_key, signature } = await window.cosmostation.cosmos.request({
       method: 'cos_signMessage',
-      params: { 
+      params: {
         chainName,
         signer,
         message,
