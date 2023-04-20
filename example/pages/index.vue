@@ -12,7 +12,7 @@
           @click="logout"
         >Logout</v-btn>
       </template>
-      <template v-slot:extension>
+      <template v-if="walletAddress" v-slot:extension>
         <v-tabs
           v-model="tab"
           grow
